@@ -4,7 +4,7 @@ from database.models import Teacher, Student, Discipline, Grade, Group
 from database.db import session
 
 
-def select_one():
+def select_01():
     """
     Знайти 5 студентів із найбільшим середнім балом з усіх предметів.
     SELECT s.fullname, ROUND(AVG(g.grade), 2) as avg_grade
@@ -21,7 +21,7 @@ def select_one():
     return result
 
 
-def select_two():
+def select_02():
     """
     SELECT d.name, s.fullname, ROUND(AVG(g.grade), 2) as avg_grade
     FROM grades g
@@ -45,7 +45,7 @@ def select_two():
 
 def select_03():
     """
-    -- 3 Знайти середній бал у групах з певного предмета.
+    Знайти середній бал у групах з певного предмета.
     SELECT g2.name, d.name, ROUND(AVG(g.grade), 2)
     FROM grades g
     LEFT JOIN students AS s ON s.id  = g.student_id
@@ -68,7 +68,7 @@ def select_03():
 
 def select_04():
     """
-    -- 4 Знайти середній бал на потоці (по всій таблиці оцінок).
+    Знайти середній бал на потоці (по всій таблиці оцінок).
     SELECT ROUND(AVG(g.grade), 2) AS average_mark
     FROM grades AS g;
     """
@@ -78,7 +78,7 @@ def select_04():
 
 def select_05():
     """
-    -- 5 Знайти які курси читає певний викладач.
+    Знайти які курси читає певний викладач.
     SELECT t.fullname, d.name
     FROM disciplines AS d
     LEFT JOIN teachers AS t ON t.id = d.teacher_id
@@ -103,9 +103,95 @@ def select_06():
     return result
 
 
+def select_07():
+    """
+    Знайти оцінки студентів у окремій групі з певного предмета.
+    SELECT gr.name AS Group_Name, s.fullname AS student, d.name AS subject, g.grade AS mark
+    FROM grades AS g
+    LEFT JOIN students AS s ON s.id  = g.student_id
+    JOIN disciplines AS d ON d.id = g.discipline_id
+    LEFT JOIN groups AS gr ON gr.id = s.group_id
+    WHERE gr.id = 3 AND d.id = 3
+    ORDER BY s.fullname DESC;
+    """
+    result = session.query(Group.name, Discipline.name, Student.fullname, Grade.grade)\
+        .select_from(Grade)\
+        .join(Student).join(Group).join(Discipline)\
+        .filter(Group.id == 3, Discipline.id == 3)\
+        .order_by(desc(Student.fullname)).all()
+    return result
+
+
+def select_08():
+    """
+    8 Знайти середній бал, який ставить певний викладач зі своїх предметів.
+    SELECT t.fullname  AS teacher , ROUND(AVG(g.grade),2) AS average_mark
+    FROM disciplines d
+    LEFT JOIN grades g ON g.discipline_id = d.id
+    LEFT JOIN teachers t ON t.id = d.teacher_id
+    WHERE t.id = 4
+    group by t.fullname;
+    """
+    result = session.query(Teacher.fullname, func.round(func.avg(Grade.grade), 2))\
+        .select_from(Discipline).join(Grade).join(Teacher)\
+        .filter(Teacher.id).group_by(Teacher.fullname).first()
+    return result
+
+
+def select_09():
+    """
+    Знайти список курсів, які відвідує студент.
+    SELECT s.fullname AS student, d.name AS discipline
+    FROM grades AS g
+    LEFT JOIN students AS s ON s.id = g.student_id
+    LEFT JOIN disciplines AS d ON d.id = g.discipline_id
+    WHERE s.id = 9
+    GROUP BY d.id, s.fullname;
+    """
+    result = session.query(Discipline.name, Student.fullname)\
+        .select_from(Grade).join(Student).join(Discipline)\
+        .filter(Student.id == 1)\
+        .group_by(Discipline.id, Student.fullname).all()
+    return result
+
+def select_10():
+    """
+    Список курсів, які певному студенту читає певний викладач.
+    SELECT d.name AS subject, s.fullname AS student, t.fullname AS teacher
+    FROM grades AS g
+    LEFT JOIN disciplines AS d ON d.id = g.discipline_id
+    LEFT JOIN teachers AS t ON t.id = g.discipline_id
+    LEFT JOIN students AS s ON s.id = g.student_id
+    WHERE s.id = 1 AND t.id = 3
+    GROUP BY d.id, s.fullname, t.fullname;
+    """
+    result = session.query(Discipline.name, Student.fullname, Teacher.fullname)\
+        .select_from(Grade).join(Discipline).join(Teacher).join(Student)\
+        .filter(Student.id == 1, Teacher.id == 3)\
+        .group_by(Discipline.id, Student.fullname, Teacher.fullname).all()
+    return result
+
+def select_11():
+    """
+    Середній бал, який певний викладач ставить певному студентові.
+    SELECT t.fullname AS TEACHER, s.fullname AS STUDENT, ROUND(AVG(g.grade), 2) AS AVERAGE_MARK
+    FROM grades AS g
+    LEFT JOIN disciplines AS d ON d.id = g.discipline_id
+    LEFT JOIN teachers AS t ON t.id = d.teacher_id
+    LEFT JOIN students AS s ON s.id  = g.student_id
+    WHERE s.id = 4 AND t.id = 3
+    GROUP BY t.fullname, s.fullname;
+    """
+    result = session.query(Teacher.fullname, Student.fullname, func.round(func.avg(Grade.grade),2))\
+        .select_from(Grade).join(Discipline).join(Teacher).join(Student)\
+        .filter(Student.id == 1, Teacher.id == 1)\
+        .group_by(Teacher.fullname, Student.fullname).first()
+    return result
+
+
 def select_12():
     """
-    -- Оцінки студентів у певній групі з певного предмета на останньому занятті.
+    Оцінки студентів у певній групі з певного предмета на останньому занятті.
     select s.id, s.fullname, g.grade, g.date_of
     from grades g
     join students s on s.id = g.student_id
@@ -129,10 +215,15 @@ def select_12():
 
 
 if __name__ == '__main__':
-    # print(select_one())
-    # print(select_two())
+    # print(select_01())
+    # print(select_02())
     # print(select_03())
     # print(select_04())
     # print(select_05())
-    print(select_06())
+    # print(select_06())
+    # print(select_07())
+    # print(select_08())
+    # print(select_09())
+    # print(select_10())
+    # print(select_11())
     # print(select_12())
