@@ -134,7 +134,7 @@ def select_08():
     """
     result = session.query(Teacher.fullname, func.round(func.avg(Grade.grade), 2))\
         .select_from(Discipline).join(Grade).join(Teacher)\
-        .filter(Teacher.id).group_by(Teacher.fullname).first()
+        .filter(Teacher.id == 4).group_by(Teacher.fullname).first()
     return result
 
 
@@ -167,7 +167,7 @@ def select_10():
     """
     result = session.query(Discipline.name, Student.fullname, Teacher.fullname)\
         .select_from(Grade).join(Discipline).join(Teacher).join(Student)\
-        .filter(Student.id == 1, Teacher.id == 3)\
+        .filter(Student.id == 2, Teacher.id == 5)\
         .group_by(Discipline.id, Student.fullname, Teacher.fullname).all()
     return result
 
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     # print(select_05())
     # print(select_06())
     # print(select_07())
-    # print(select_08())
+    print(select_08())
     # print(select_09())
     # print(select_10())
     # print(select_11())

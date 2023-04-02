@@ -38,7 +38,7 @@ def fill_data():
 
     # Создаем объект библиотеки Faker. В качестве параметра передаем local 'uk-UA'
     # Больше - https://faker.readthedocs.io/en/master/locales.html
-    fake = faker.Faker()
+    fake = faker.Faker('uk-UA')
     number_of_teachers = 5
     number_of_students = 50
 
